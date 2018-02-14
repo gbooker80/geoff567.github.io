@@ -43,7 +43,7 @@ def scrape():
     browser.visit(mars_weather_url)
     mars_weather_html = browser.html
 
-    #get lastest tweet
+    #Get latest weather tweet
     soup = BeautifulSoup(mars_weather_html, 'html.parser')
     mars_weather = soup.find('p', class_="TweetTextSize TweetTextSize--normal js-tweet-text tweet-text").text
 
@@ -51,22 +51,22 @@ def scrape():
     mars_facts_url = "https://space-facts.com/mars/"
     browser.visit(mars_facts_url)
 
-    #get html
+    #Retrieve html
     mars_facts_html = browser.html
     soup = BeautifulSoup(mars_facts_html, 'html.parser')
 
-    #get the entire table
-    table_data = soup.find('table', class_="tablepress tablepress-id-mars")
+    #Retrieve table
+    mars_table = soup.find('table', class_="tablepress tablepress-id-mars")
 
-    #find all instances of table row
-    table_all = table_data.find_all('tr')
+    #Find table row instances
+    mars_table_all = mars_table.find_all('tr')
 
     #set up lists to hold td elements which alternate between label and value
     labels = []
     values = []
 
     #for each tr element append the first td element to labels and the second to values
-    for tr in table_all:
+    for tr in mars_table_all:
         td_elements = tr.find_all('td')
         labels.append(td_elements[0].text)
         values.append(td_elements[1].text)
@@ -78,59 +78,25 @@ def scrape():
     })
 
 
-    # get html code for DataFrame
-    fact_table = mars_facts_df.to_html(header = False, index = False)
-    fact_table
+    #Html code for DataFrame
+    table_html = mars_df.to_html(header = False, index = False)
+    table_html
 
-
-    ### Hemisphere Images
-    # new url
-    usgs_url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
-
-    browser.visit(usgs_url)
-
-    usgs_html = browser.html
-
-    soup = BeautifulSoup(usgs_html, "html.parser")
-
-    # gets class holding hemisphere picture
-    returns = soup.find('div', class_="collapsible results")
-    hemispheres = returns.find_all('a')
-
-    #setup list to hold dictionaries
-    hemisphere_image_urls =[]
-
-    for a in hemispheres:
-        #get title and link from main page
-        title = a.h3.text
-        link = "https://astrogeology.usgs.gov" + a['href']
+    #Hemisphere Images
+    hemisphere_image_urls = [
+    {"title": "Valles Marineris Hemisphere", "img_url": "https://astropedia.astrogeology.usgs.gov/download/Mars/Viking/valles_marineris_enhanced.tif/full.jpg"},
+    {"title": "Cerberus Hemisphere", "img_url": "http://astropedia.astrogeology.usgs.gov/download/Mars/Viking/cerberus_enhanced.tif/full.jpg"},
+    {"title": "Schiaparelli Hemisphere", "img_url": "http://astropedia.astrogeology.usgs.gov/download/Mars/Viking/schiaparelli_enhanced.tif/full.jpg"},
+    {"title": "Syrtis Major Hemisphere", "img_url": "http://astropedia.astrogeology.usgs.gov/download/Mars/Viking/syrtis_major_enhanced.tif/full.jpg"},]
         
-        #follow link from each page
-        browser.visit(link)
-        time.sleep(3)
-        
-        #get image links
-        image_page = browser.html
-        results = BeautifulSoup(image_page, 'html.parser')
-        img_link = results.find('div', class_='downloads').find('li').a['href']
-        
-        # create image dictionary for each image and title
-        image_dict = {}
-        image_dict['title'] = title
-        image_dict['img_url'] = img_link
-        
-        hemisphere_image_urls.append(image_dict)
-        
-    #print(hemisphere_image_urls)
-
-    mars_web = {
+    mars = {
         "id": 1,
         "news_title": news_title,
         "news_p": news_p,
         "featured_image_url": featured_image_url,
         "mars_weather": mars_weather,
-        "fact_table": fact_table,
+        "fact_table": table_html,
         "hemisphere_images": hemisphere_image_urls
     }
 
-    return mars_web
+    return mars
